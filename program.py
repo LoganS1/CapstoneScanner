@@ -1,10 +1,19 @@
 import serial
 from time import sleep
 import requests
+import pygame
 
+#Scanner Setup
 ser = serial.Serial("/dev/serial0", 9600)
-url = 'https://logansinclair.me'
 SCAN_CMD = b'\x7E\x00\x08\x01\x00\x02\x01\xAB\xCD'
+
+#Web Setup
+url = 'https://logansinclair.me'
+
+#Audio Setup
+pygame.mixer.init()
+sound = pygame.mixer.Sound('/home/pi/Scanner/sound.wav')
+
 
 def read():
 	recieved_data = ser.read()
@@ -21,6 +30,7 @@ def process(data):
 	strings = data.split(":")
 	if(len(strings) == 3):
 		print("Batt SN: " + strings[2] + " || Full Barcode: " + data )
+		sound.play()
 	else:
 		print("Invalid Bacode: " + data)
 
