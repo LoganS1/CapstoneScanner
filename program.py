@@ -27,14 +27,17 @@ GPIO.setup(GREEN_LED, GPIO.OUT)
 GPIO.setup(YELLOW_LED, GPIO.OUT)
 GPIO.setup(RED_LED, GPIO.OUT)
 
+#Button Setup
+BUTTON = 37
+GPIO.setup(BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
 #Status Setup
-Class Status(Enum):
+class Status(Enum):
 	READY = 1
 	WAITING = 2
 	ERROR = 3
 
 def read():
-	setStatus(Status.WAITING)
 	recieved_data = ser.read()
 	sleep(0.03)
 	data_left = ser.inWaiting()
@@ -48,18 +51,32 @@ def write(data):
 def process(data):
 	strings = data.split(":")
 	if(len(strings) == 3):
+		setStatus(Status.READY)
 		print("Batt SN: " + strings[2] + " || Full Barcode: " + data )
 		sound.play()
-		GPIO.output(led, GPIO.HIGH)
-		sleep(1)
-		GPIO.output(led, GPIO.LOW)
+		sleep(0.3)
+		setStatus(Status.WAITING)
+		sleep(0.3)
+		setStatus(Status.READY)
+		sleep(0.4)
 	else:
-		print("Invalid Bacode: " + data)
 		setStatus(Status.ERROR)
+		print("Invalid Bacode: " + data)
+		sleep(1)
+
 def setStatus(status):
 	if(status==Status.READY):
-	else if(status==Status.WAITING):
-	else if(status==Status.ERROR):
+		GPIO.output(GREEN_LED, GPIO.HIGH)
+		GPIO.output(YELLOW_LED, GPIO.LOW)
+		GPIO.output(RED_LED, GPIO.LOW)
+	elif(status==Status.WAITING):
+		GPIO.output(GREEN_LED, GPIO.LOW)
+		GPIO.output(YELLOW_LED, GPIO.HIGH)
+		GPIO.output(RED_LED, GPIO.LOW)
+	elif(status==Status.ERROR):
+		GPIO.output(GREEN_LED, GPIO.LOW)
+		GPIO.output(YELLOW_LED, GPIO.LOW)
+		GPIO.output(RED_LED, GPIO.HIGH)
 
 def signal_handler(sig, frame):
 	print("Exiting...")
@@ -69,7 +86,10 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 while True:
-	i = input()
+	setStatus(Status.READY)
+	while (GPIO.input(BUTTON) == GPIO.HIGH):
+		sleep(0.1)
+	setStatus(Status.WAITING)
 	ser.write(SCAN_CMD)
 	read()
 	data = read()
