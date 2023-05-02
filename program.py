@@ -11,7 +11,7 @@ ser = serial.Serial("/dev/serial0", 9600)
 SCAN_CMD = b'\x7E\x00\x08\x01\x00\x02\x01\xAB\xCD'
 
 #Web Setup
-url = 'https://logansinclair.me'
+URL = 'https://capstonetestserver.logansinclair.me'
 
 #Audio Setup
 pygame.mixer.init()
@@ -51,9 +51,10 @@ def write(data):
 def process(data):
 	strings = data.split(":")
 	if(len(strings) == 3):
-		setStatus(Status.READY)
 		print("Batt SN: " + strings[2] + " || Full Barcode: " + data )
 		sound.play()
+		requests.post(URL, data)
+		setStatus(Status.READY)
 		sleep(0.3)
 		setStatus(Status.WAITING)
 		sleep(0.3)
