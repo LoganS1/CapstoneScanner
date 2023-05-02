@@ -87,8 +87,8 @@ signal.signal(signal.SIGINT, signal_handler)
 
 while True:
 	setStatus(Status.READY)
-	while (GPIO.input(BUTTON) == GPIO.HIGH):
-		sleep(0.1)
+	# while (GPIO.input(BUTTON) == GPIO.HIGH):
+	# 	sleep(0.1)
 	setStatus(Status.WAITING)
 	ser.write(SCAN_CMD)
 	read()
