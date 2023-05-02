@@ -53,7 +53,7 @@ def process(data):
 	if(len(strings) == 3):
 		print("Batt SN: " + strings[2] + " || Full Barcode: " + data )
 		sound.play()
-		requests.post(URL, data)
+		requests.post(URL, {"data": data})
 		setStatus(Status.READY)
 		sleep(0.3)
 		setStatus(Status.WAITING)
