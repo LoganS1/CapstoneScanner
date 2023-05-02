@@ -87,11 +87,15 @@ signal.signal(signal.SIGINT, signal_handler)
 
 while True:
 	setStatus(Status.READY)
+
+	# Wait for wired button
 	# while (GPIO.input(BUTTON) == GPIO.HIGH):
 	# 	sleep(0.1)
-	i = input()
-	setStatus(Status.WAITING)
+
+	# Wait for console input
+	# i = input()
 	ser.write(SCAN_CMD)
+	setStatus(Status.READY)
 	read()
 	data = read()
 	process(data)
