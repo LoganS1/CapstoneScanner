@@ -49,6 +49,7 @@ def write(data):
 	return read()
 
 def process(data):
+	setStatus(Status.WAITING)
 	strings = data.split(":")
 	if(len(strings) == 3):
 		print("Batt SN: " + strings[2] + " || Full Barcode: " + data )
