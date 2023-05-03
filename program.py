@@ -17,9 +17,9 @@ URL = 'https://capstonetestserver.logansinclair.me'
 #Audio Setup
 pygame.mixer.init()
 soundSuccess = pygame.mixer.Sound('/home/pi/Scanner/success.wav')
-soundFails = []
-soundFails.append(pygame.mixer.Sound('/home/pi/Scanner/fail1.wav'))
-soundFails.append(pygame.mixer.Sound('/home/pi/Scanner/fail2.wav'))
+soundFail1 = pygame.mixer.Sound('/home/pi/Scanner/fail1.wav')
+soundFail2 = pygame.mixer.Sound('/home/pi/Scanner/fail2.wav')
+soundFails = [soundFail1, soundFail2]
 # soundFails.append(pygame.mixer.Sound('/home/pi/Scanner/fail1.wav'))
 
 #LED Setup
@@ -82,7 +82,7 @@ def process(data):
 		setStatus(Status.READY)
 		sleep(0.4)
 	else:
-		random.choice(soundFails).play()
+		soundFail1.play()
 		setStatus(Status.ERROR)
 		print("Invalid Bacode: " + data)
 		sleep(1)
