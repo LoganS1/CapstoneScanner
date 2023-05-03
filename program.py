@@ -5,6 +5,7 @@ import pygame
 import RPi.GPIO as GPIO
 import signal
 from enum import Enum
+import random
 
 #Scanner Setup
 ser = serial.Serial("/dev/serial0", 9600)
@@ -15,7 +16,11 @@ URL = 'https://capstonetestserver.logansinclair.me'
 
 #Audio Setup
 pygame.mixer.init()
-sound = pygame.mixer.Sound('/home/pi/Scanner/sound.wav')
+soundSuccess = pygame.mixer.Sound('/home/pi/Scanner/success.wav')
+soundFails = []
+soundFails.append(pygame.mixer.Sound('/home/pi/Scanner/fail1.wav'))
+soundFails.append(pygame.mixer.Sound('/home/pi/Scanner/fail2.wav'))
+# soundFails.append(pygame.mixer.Sound('/home/pi/Scanner/fail1.wav'))
 
 #LED Setup
 GREEN_LED =  16
@@ -53,8 +58,23 @@ def process(data):
 	strings = data.split(":")
 	if(len(strings) == 3):
 		print("Batt SN: " + strings[2] + " || Full Barcode: " + data )
-		sound.play()
-		requests.post(URL, {"data": data})
+		soundSuccess.play()
+		try:
+			requests.post(URL, {"data": data}, timeout=5)
+		except requests.exceptions.RequestException as e:  # This is the correct syntax
+			random.choice(soundFails).play()
+			setStatus(Status.ERROR)
+			sleep(0.3)
+			setStatus(Status.WAITING)
+			sleep(0.3)
+			setStatus(Status.ERROR)
+			sleep(0.3)
+			setStatus(Status.WAITING)
+			sleep(0.3)
+			setStatus(Status.ERROR)
+			sleep(0.3)
+			return
+		
 		setStatus(Status.READY)
 		sleep(0.3)
 		setStatus(Status.WAITING)
@@ -62,6 +82,7 @@ def process(data):
 		setStatus(Status.READY)
 		sleep(0.4)
 	else:
+		random.choice(soundFails).play()
 		setStatus(Status.ERROR)
 		print("Invalid Bacode: " + data)
 		sleep(1)
