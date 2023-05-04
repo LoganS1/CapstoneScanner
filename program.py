@@ -60,20 +60,27 @@ def process(data):
 	setStatus(Status.WAITING)
 	strings = data.split(":")
 	if(len(strings) == 4):
-		print("Batt SN: " + strings[2] + " || Full Barcode: " + data )
+		print("Battery Barcode: " + data)
 		soundSuccess.play()
 		try:
 			requests.post(URL, {"data": data}, timeout=5)
 			setStatus(Status.SUCC_SCAN)
-		except requests.exceptions.RequestException as e:  # This is the correct syntax
-			random.choice(soundFails).play()
+		except requests.exceptions.RequestException as e:
+			sound = random.choice(soundFails)
+			sound.play()
 			setStatus(Status.BAD_NETWORK)
 		
 	else:
 		sound = random.choice(soundFails)
 		sound.play()
 		print("Invalid Bacode: " + data)
-		setStatus(Status.BAD_SCAN)
+		try:
+			requests.post(URL, {"data": data}, timeout=5)
+			setStatus(Status.BAD_SCAN)
+		except requests.exceptions.RequestException as e:
+			sound = random.choice(soundFails)
+			sound.play()
+			setStatus(Status.BAD_NETWORK)
 
 def turnOnRed():
 	GPIO.output(GREEN_LED, GPIO.LOW)
