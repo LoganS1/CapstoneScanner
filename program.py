@@ -56,7 +56,7 @@ def write(data):
 def process(data):
 	setStatus(Status.WAITING)
 	strings = data.split(":")
-	if(len(strings) == 3):
+	if(len(strings) == 4):
 		print("Batt SN: " + strings[2] + " || Full Barcode: " + data )
 		soundSuccess.play()
 		try:
@@ -82,7 +82,8 @@ def process(data):
 		setStatus(Status.READY)
 		sleep(0.4)
 	else:
-		soundFail1.play()
+		sound = random.choice(soundFails)
+		sound.play()
 		setStatus(Status.ERROR)
 		print("Invalid Bacode: " + data)
 		sleep(1)
@@ -109,7 +110,7 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 while True:
-	setStatus(Status.READY)
+	setStatus(Status.WAITING)
 
 	# Wait for wired button
 	# while (GPIO.input(BUTTON) == GPIO.HIGH):
@@ -117,9 +118,11 @@ while True:
 
 	# Wait for console input
 	# i = input()
+
 	ser.write(SCAN_CMD)
+	sleep(0.1)
+	read() # clear response
 	setStatus(Status.READY)
-	read()
 	data = read()
 	process(data)
 
