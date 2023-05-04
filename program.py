@@ -47,7 +47,7 @@ class Status(Enum):
 
 def read():
 	recieved_data = ser.read()
-	sleep(0.03)
+	sleep(0.1)
 	data_left = ser.inWaiting()
 	recieved_data += ser.read(data_left)
 	return recieved_data.decode("utf8")
