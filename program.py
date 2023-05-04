@@ -78,7 +78,10 @@ def process(data):
 		sound.play()
 		setStatus(Status.BAD_SCAN)
 		print("Invalid Bacode: " + data)
-		requests.post(URL, {"data": data}, timeout=5)
+		try:
+			requests.post(URL, {"data": data}, timeout=5)
+		except requests.exceptions.RequestException as e:
+			pass
 
 def turnOnRed():
 	GPIO.output(GREEN_LED, GPIO.LOW)
