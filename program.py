@@ -64,10 +64,10 @@ def process(data):
 	# Spiers Barcodes have 3 ":" in them
 	if(len(strings) == 4):
 		print("Battery Barcode: " + data)
-		soundSuccess.play()
 		try:
 			requests.post(URL, {"data": data}, timeout=5)
 			setStatus(Status.SUCC_SCAN)
+			soundSuccess.play()
 		except requests.exceptions.RequestException as e:
 			sound = random.choice(soundFails)
 			sound.play()
