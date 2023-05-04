@@ -41,6 +41,9 @@ class Status(Enum):
 	READY = 1
 	WAITING = 2
 	ERROR = 3
+	SUCC_SCAN = 4
+	BAD_SCAN = 5
+	BAD_NETWORK = 6
 
 def read():
 	recieved_data = ser.read()
@@ -61,46 +64,62 @@ def process(data):
 		soundSuccess.play()
 		try:
 			requests.post(URL, {"data": data}, timeout=5)
+			setStatus(Status.SUCC_SCAN)
 		except requests.exceptions.RequestException as e:  # This is the correct syntax
 			random.choice(soundFails).play()
-			setStatus(Status.ERROR)
-			sleep(0.3)
-			setStatus(Status.WAITING)
-			sleep(0.3)
-			setStatus(Status.ERROR)
-			sleep(0.3)
-			setStatus(Status.WAITING)
-			sleep(0.3)
-			setStatus(Status.ERROR)
-			sleep(0.3)
-			return
+			setStatus(Status.BAD_NETWORK)
 		
-		setStatus(Status.READY)
-		sleep(0.3)
-		setStatus(Status.WAITING)
-		sleep(0.3)
-		setStatus(Status.READY)
-		sleep(0.4)
 	else:
 		sound = random.choice(soundFails)
 		sound.play()
-		setStatus(Status.ERROR)
 		print("Invalid Bacode: " + data)
-		sleep(1)
+		setStatus(Status.BAD_SCAN)
+
+def turnOnRed():
+	GPIO.output(GREEN_LED, GPIO.LOW)
+	GPIO.output(YELLOW_LED, GPIO.LOW)
+	GPIO.output(RED_LED, GPIO.HIGH)
+
+def turnOnGreen():
+	GPIO.output(GREEN_LED, GPIO.HIGH)
+	GPIO.output(YELLOW_LED, GPIO.LOW)
+	GPIO.output(RED_LED, GPIO.LOW)
+
+def turnOnYellow():
+	GPIO.output(GREEN_LED, GPIO.LOW)
+	GPIO.output(YELLOW_LED, GPIO.HIGH)
+	GPIO.output(RED_LED, GPIO.LOW)
+
 
 def setStatus(status):
 	if(status==Status.READY):
-		GPIO.output(GREEN_LED, GPIO.HIGH)
-		GPIO.output(YELLOW_LED, GPIO.LOW)
-		GPIO.output(RED_LED, GPIO.LOW)
+		turnOnGreen()
 	elif(status==Status.WAITING):
-		GPIO.output(GREEN_LED, GPIO.LOW)
-		GPIO.output(YELLOW_LED, GPIO.HIGH)
-		GPIO.output(RED_LED, GPIO.LOW)
+		turnOnYellow()
+	# Not Used
 	elif(status==Status.ERROR):
-		GPIO.output(GREEN_LED, GPIO.LOW)
-		GPIO.output(YELLOW_LED, GPIO.LOW)
-		GPIO.output(RED_LED, GPIO.HIGH)
+		turnOnRed() 
+	elif(status==Status.SUCC_SCAN):
+		turnOnGreen()
+		sleep(0.3)
+		turnOnYellow()
+		sleep(0.3)
+		turnOnGreen()
+		sleep(0.4)
+	elif(status==Status.BAD_SCAN):
+		turnOnRed()
+		sleep(1)
+	elif(status==Status.BAD_NETWORK):
+		turnOnRed()
+		sleep(0.3)
+		turnOnYellow()
+		sleep(0.3)
+		turnOnRed()
+		sleep(0.3)
+		turnOnYellow()
+		sleep(0.3)
+		turnOnRed()
+		sleep(0.3)
 
 def signal_handler(sig, frame):
 	print("Exiting...")
