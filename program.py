@@ -19,8 +19,8 @@ pygame.mixer.init()
 soundSuccess = pygame.mixer.Sound('/home/pi/Scanner/success.wav')
 soundFail1 = pygame.mixer.Sound('/home/pi/Scanner/fail1.wav')
 soundFail2 = pygame.mixer.Sound('/home/pi/Scanner/fail2.wav')
-soundFails = [soundFail1, soundFail2]
-# soundFails.append(pygame.mixer.Sound('/home/pi/Scanner/fail1.wav'))
+soundFail3 = pygame.mixer.Sound('/home/pi/Scanner/fail3.wav')
+soundFails = [soundFail1, soundFail2, soundFail3]
 
 #LED Setup
 GREEN_LED =  16
@@ -45,20 +45,23 @@ class Status(Enum):
 	BAD_SCAN = 5
 	BAD_NETWORK = 6
 
+# UART Read
 def read():
 	recieved_data = ser.read()
 	sleep(0.1)
 	data_left = ser.inWaiting()
 	recieved_data += ser.read(data_left)
 	return recieved_data.decode("utf8")
-
+# UART Write
 def write(data):
 	ser.write(data)
 	return read()
 
+#Process barcode data
 def process(data):
 	setStatus(Status.WAITING)
 	strings = data.split(":")
+	# Spiers Barcodes have 3 ":" in them
 	if(len(strings) == 4):
 		print("Battery Barcode: " + data)
 		soundSuccess.play()
@@ -73,14 +76,9 @@ def process(data):
 	else:
 		sound = random.choice(soundFails)
 		sound.play()
+		setStatus(Status.BAD_SCAN)
 		print("Invalid Bacode: " + data)
-		try:
-			requests.post(URL, {"data": data}, timeout=5)
-			setStatus(Status.BAD_SCAN)
-		except requests.exceptions.RequestException as e:
-			sound = random.choice(soundFails)
-			sound.play()
-			setStatus(Status.BAD_NETWORK)
+		requests.post(URL, {"data": data}, timeout=5)
 
 def turnOnRed():
 	GPIO.output(GREEN_LED, GPIO.LOW)
@@ -137,18 +135,9 @@ signal.signal(signal.SIGINT, signal_handler)
 
 while True:
 	setStatus(Status.WAITING)
-
-	# Wait for wired button
-	# while (GPIO.input(BUTTON) == GPIO.HIGH):
-	# 	sleep(0.1)
-
-	# Wait for console input
-	# i = input()
-
 	ser.write(SCAN_CMD)
 	sleep(0.1)
 	read() # clear response
 	setStatus(Status.READY)
 	data = read()
 	process(data)
-
